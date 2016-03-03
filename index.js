@@ -86,6 +86,20 @@ $E.init = function () {
 
     };
 
+    function getParameterByName(name, url) {
+        return new Promise(function (resolve, reject) {
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            var queryParamVal = decodeURIComponent(results[2].replace(/\+/g, " "));
+            resolve(queryParamVal);
+        });
+    }
+
+
+
     var tableRequestHandler = function (req, res, headers) {
         var resObject = {};
         if(this.tName){
@@ -119,9 +133,9 @@ $E.init = function () {
                     });
                     break;
                 case 'DELETE':
-                    reqPromise = parseFormFields(req).then(function (formFields) {
-                        if(formFields.Id){
-                            var tData = parseTableRow(tName, formFields);
+                    reqPromise = getParameterByName("Id", req.url).then(function (val) {
+                        if(val){
+                            var tData = parseTableRow(tName, { "Id": val });
                             if(Utl.DB.deleteTableRow(tName, tData)){
                                 return Utl.DB.writeTable(tName).then(function () {
                                     return tData;
@@ -133,6 +147,7 @@ $E.init = function () {
                             return { Status: "No dude"};
                         }
                     });
+
                     break;
             }
 

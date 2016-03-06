@@ -16,6 +16,8 @@ $E.rootPath = "";
 $E.dBFolderName = "";
 $E.dBPort = 5654;
 
+$E.allowOrigin = "http://localhost:3434";
+
 var fallBackRoute = function (req, res, headers) {
     res.writeHead(200, headers);
     var resObject = {};
@@ -24,37 +26,36 @@ var fallBackRoute = function (req, res, headers) {
 };
 
 
-var server = http.createServer(function(req, res) {
-    var headers = {};
+$E.init = function () {
 
-    headers['Access-Control-Allow-Origin'] = 'http://localhost:3434';
-    headers['Access-Control-Allow-Credentials'] = true;
-    headers['Access-Control-Allow-Headers'] = 'content-type';
-    headers['Access-Control-Allow-Methods'] = 'DELETE,GET,POST';
+    var server = http.createServer(function(req, res) {
+        var headers = {};
 
-    if(Utl.isNewRequest(req)){
-        Utl.makerequestold(headers);
-    }
-    var isRouteFound = false, fnToCall = null;
-    _.forEach(routings, function (lItem) {
-        var reqUrl = url.parse(req.url);
-        if(lItem.Url === reqUrl.pathname){
-            isRouteFound = true;
-            fnToCall = lItem.Fn;
+        headers['Access-Control-Allow-Origin'] = $E.allowOrigin;
+        headers['Access-Control-Allow-Credentials'] = true;
+        headers['Access-Control-Allow-Headers'] = 'content-type';
+        headers['Access-Control-Allow-Methods'] = 'DELETE,GET,POST';
+
+        if(Utl.isNewRequest(req)){
+            Utl.makerequestold(headers);
+        }
+        var isRouteFound = false, fnToCall = null;
+        _.forEach(routings, function (lItem) {
+            var reqUrl = url.parse(req.url);
+            if(lItem.Url === reqUrl.pathname){
+                isRouteFound = true;
+                fnToCall = lItem.Fn;
+            }
+        });
+
+        if(isRouteFound && fnToCall){
+            fnToCall.call(null, req, res, headers);
+        }else {
+            fallBackRoute(req, res, headers);
         }
     });
 
-    if(isRouteFound && fnToCall){
-        fnToCall.call(null, req, res, headers);
-    }else {
-        fallBackRoute(req, res, headers);
-    }
-});
 
-
-
-
-$E.init = function () {
     $E.Tables = Object.keys($E.ModelHash);
 
     Utl.DB.Tables = $E.Tables;
@@ -64,10 +65,10 @@ $E.init = function () {
     Utl.DB.folderName = $E.dBFolderName;
 
 
-    var parseTableRow = function (tName, reqData) {
+    var parseTableRow = function (tName, reqData, isNew, isUpdate) {
         var obj = {};
         if($E.ModelHash[tName.toLowerCase()]){
-            obj = new $E.ModelHash[tName.toLowerCase()](reqData);
+            obj = new $E.ModelHash[tName.toLowerCase()](reqData, isNew, isUpdate);
         }
         return obj;
     };
@@ -112,7 +113,7 @@ $E.init = function () {
                 case 'POST':
                     reqPromise = parseFormFields(req).then(function (formFields) {
                         if(formFields.Id){
-                            var tData = parseTableRow(tName, formFields);
+                            var tData = parseTableRow(tName, formFields, false, true);
                             if(Utl.DB.updateTableRow(tName, tData)){
                                 return Utl.DB.writeTable(tName).then(function () {
                                     return tData;
@@ -121,7 +122,7 @@ $E.init = function () {
                                 return { Status: "No dude"};
                             }
                         }else{
-                            var tData = parseTableRow(tName, formFields);
+                            var tData = parseTableRow(tName, formFields, true, false);
                             if(Utl.DB.addTableRow(tName, tData)){
                                 return Utl.DB.writeTable(tName).then(function () {
                                     return tData;

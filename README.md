@@ -20,6 +20,9 @@ nbServer.rootPath = __dirname;
 //folder name under the rootPath where json files saved
 nbServer.dBFolderName = "data";
 
+//provide allowOrigin to allow requests from specific domain.
+nbServer.allowOrigin = "http://localhost:3434";
+
 //server runs on mentioned port
 nbServer.dBPort = 5654;
 ```

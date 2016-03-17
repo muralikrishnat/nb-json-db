@@ -196,7 +196,7 @@ var tableRequestHandler = function (req, res, headers) {
                                         responseList.push(itemToShow);
                                     });
                                 }
-                                return responseList;
+                                return {list: responseList};
                             }else{
                                 return resp;
                             }

@@ -384,7 +384,7 @@ var loginHandler = function (req, res, headers) {
     headers["Content-Type"] = "text/json";
     Utl.isAuthenticatedAsync(req, loggedInTokens).then(function (resp) {
         if(resp.IsAuthenticated){
-            resObject.Body = {tokenObject: resp.UserInfo.token};
+            resObject.Body = {tokenObject: resp.UserInfo.token, UserId: resp.UserInfo.UserId, Username: resp.UserInfo.Username };
             Utl.sendResObject(res, headers, resObject);
         }else {
             switch (req.method.toUpperCase()) {
@@ -408,9 +408,10 @@ var loginHandler = function (req, res, headers) {
                                                 loggedInTokens.push({
                                                     token: token,
                                                     Username: username,
-                                                    Type: userData.UserType
+                                                    Type: userData.UserType,
+                                                    UserId: userData.Id
                                                 });
-                                                return {tokenObject: token, UserId: userData.Id };
+                                                return {tokenObject: token, UserId: userData.Id, Username: username };
                                             } else {
                                                 return {
                                                     "Status": "Failed",

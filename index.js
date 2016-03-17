@@ -410,7 +410,7 @@ var loginHandler = function (req, res, headers) {
                                                     Username: username,
                                                     Type: userData.UserType
                                                 });
-                                                return {tokenObject: token};
+                                                return {tokenObject: token, UserId: userData.Id };
                                             } else {
                                                 return {
                                                     "Status": "Failed",

@@ -1,6 +1,6 @@
 {
   "name": "nb-json-db",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "simple db server using json",
   "main": "index.js",
   "scripts": {

@@ -433,8 +433,8 @@ var loginHandler = function (req, res, headers) {
                     break;
                 case 'POST':
                     reqPromise = parseFormFields(req).then(function (fields) {
-                        var username = fields.username;
-                        var password = fields.password;
+                        var username = fields[$E.LoginFields.Fields.UserNameField];
+                        var password = fields[$E.LoginFields.Fields.PasswordField];
                         if (username) {
                             var usersTable = $E.ModelHash[$E.LoginFields.TableName];
                             if (usersTable) {

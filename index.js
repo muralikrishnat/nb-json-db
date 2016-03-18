@@ -103,7 +103,9 @@ var parseTableRow = function (tName, reqData, isNew, isUpdate) {
         if($E.ModelHash[tName.toLowerCase()].EncryptedFields && $E.ModelHash[tName.toLowerCase()].EncryptedFields instanceof Array){
             $E.ModelHash[tName.toLowerCase()].EncryptedFields.forEach(function (fieldItem) {
                 var fieldValue = reqData[fieldItem];
-                reqData[fieldItem] = Utl.Crypto.encode(fieldValue);
+                if(fieldValue) {
+                    reqData[fieldItem] = Utl.Crypto.encode(fieldValue);
+                }
             });
             obj = new $E.ModelHash[tName.toLowerCase()](reqData, isNew, isUpdate);
         }else {

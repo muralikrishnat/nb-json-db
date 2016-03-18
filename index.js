@@ -433,7 +433,43 @@ var loginHandler = function (req, res, headers) {
                     break;
                 case 'POST':
                     reqPromise = parseFormFields(req).then(function (fields) {
-
+                        var username = fields.username;
+                        var password = fields.password;
+                        if (username) {
+                            var usersTable = $E.ModelHash[$E.LoginFields.TableName];
+                            if (usersTable) {
+                                return Utl.DB.getTable($E.LoginFields.TableName, $E.ModelHash).then(function (users) {
+                                    var userFound = users.list.filter(function (userItem) {
+                                        return userItem[$E.LoginFields.Fields.UserNameField] == username;
+                                    });
+                                    if (userFound && userFound.length > 0) {
+                                        var userData = userFound[0];
+                                        var passwordToCheck = userData[$E.LoginFields.Fields.PasswordField];
+                                        var decodedPassword = Utl.Crypto.decode(passwordToCheck);
+                                        if (password && password === decodedPassword) {
+                                            var token = Utl.guid();
+                                            headers['Set-Cookie'] = 'lToken=' + token;
+                                            loggedInTokens.push({
+                                                token: token,
+                                                Username: username,
+                                                UserType: userData.UserType,
+                                                UserId: userData.Id
+                                            });
+                                            return {tokenObject: token, UserId: userData.Id, Username: username, UserType: userData.UserType };
+                                        } else {
+                                            return {
+                                                "Status": "Failed",
+                                                "Msg": "UserName and Password not matched."
+                                            };
+                                        }
+                                    } else {
+                                        return {"Status": "Failed", "Msg": "UserName and Password not matched."};
+                                    }
+                                });
+                            }
+                        } else {
+                            return {"Status": "Failed", "Msg": "UserName and Password not matched."};
+                        }
                     });
                     break;
                 default:
